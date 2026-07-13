@@ -42,6 +42,7 @@
             background-color: #0d0d0d;
             color: #e5e5e5;
             overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
         
         .vs-glow {
@@ -49,14 +50,14 @@
         }
 
         .lion-glow {
-            box-shadow: 0 0 25px rgba(217, 119, 6, 0.35);
+            box-shadow: 0 0 25px rgba(217, 119, 6, 0.15);
         }
 
         .tiger-glow {
-            box-shadow: 0 0 25px rgba(234, 88, 12, 0.35);
+            box-shadow: 0 0 25px rgba(234, 88, 12, 0.15);
         }
 
-        /* custom scrollbar */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -78,9 +79,68 @@
         .pulse-active {
             animation: pulse-grow 2s infinite ease-in-out;
         }
+
+        /* LIGHT MODE OVERRIDES */
+        .light-mode {
+            background-color: #f9fafb !important;
+            color: #111827 !important;
+        }
+        .light-mode nav {
+            background-color: rgba(255, 255, 255, 0.85) !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+        }
+        .light-mode nav a {
+            color: #4b5563 !important;
+        }
+        .light-mode nav a:hover {
+            color: #d97706 !important;
+        }
+        .light-mode .text-neutral-400,
+        .light-mode p {
+            color: #4b5563 !important;
+        }
+        .light-mode .text-neutral-500 {
+            color: #6b7280 !important;
+        }
+        .light-mode .text-white {
+            color: #111827 !important;
+        }
+        .light-mode section {
+            background-color: #f3f4f6 !important;
+        }
+        .light-mode #voting,
+        .light-mode #simulator {
+            background-color: #f9fafb !important;
+        }
+        .light-mode .bg-neutral-900,
+        .light-mode .bg-neutral-950,
+        .light-mode .bg-neutral-900\/60,
+        .light-mode .bg-neutral-950\/80 {
+            background-color: #ffffff !important;
+            border-color: #e5e7eb !important;
+            color: #1f2937 !important;
+        }
+        .light-mode #versusEffect {
+            color: rgba(0, 0, 0, 0.05) !important;
+        }
+        .light-mode footer {
+            background-color: #f3f4f6 !important;
+            border-color: #e5e7eb !important;
+        }
+        .light-mode footer button,
+        .light-mode footer p {
+            color: #4b5563 !important;
+        }
+        .light-mode #combatLog {
+            background-color: #f9fafb !important;
+            border-color: #e5e7eb !important;
+        }
     </style>
 </head>
 <body class="font-sans antialiased">
+
+<!-- Scroll Progress Bar -->
+<div id="scrollProgressBar" class="fixed top-0 left-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500 z-[60] transition-all duration-700" style="width: 0%"></div>
 
 <!-- Navigation -->
 <nav class="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-black/60 border-b border-white/10 transition-all duration-300">
@@ -98,7 +158,11 @@
                 <a href="#simulator" class="text-sm font-semibold hover:text-lion transition">전투 시뮬레이션</a>
                 <a href="#analysis" class="text-sm font-semibold hover:text-lion transition">심층 분석</a>
             </div>
-            <div>
+            <div class="flex items-center space-x-3">
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" id="themeToggleBtn" class="p-2.5 rounded-full bg-neutral-900 border border-neutral-700 text-amber-500 hover:border-orange-500 transition-colors focus:outline-none" title="테마 전환">
+                    <i class="fa-solid fa-moon text-sm"></i>
+                </button>
                 <a href="#simulator" class="bg-gradient-to-r from-lion to-tiger hover:brightness-115 text-white text-xs md:text-sm font-bold px-4 py-2 rounded-full shadow-lg transition duration-300 transform hover:scale-105 inline-block">
                     시뮬레이터 시작
                 </a>
@@ -125,8 +189,9 @@
     <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20"></div>
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10 w-full text-center">
-        <span class="inline-block text-xs uppercase font-display tracking-widest text-orange-500 font-bold bg-orange-500/10 border border-orange-500/30 px-4 py-1.5 rounded-full mb-6">
-            백수의 왕 vs 아시아의 제왕
+        <!-- Dynamic Typing Banner -->
+        <span class="inline-block text-xs uppercase font-display tracking-widest text-orange-500 font-bold bg-orange-500/10 border border-orange-500/30 px-4 py-1.5 rounded-full mb-6 min-h-[34px]">
+            <i class="fa-solid fa-bolt mr-1.5 text-amber-500"></i><span id="typing-text"></span><span class="animate-ping ml-0.5 font-light">|</span>
         </span>
         
         <h1 class="text-4xl sm:text-6xl md:text-8xl font-display font-black tracking-tighter mb-4 leading-none">
@@ -151,19 +216,19 @@
 
         <!-- Fast highlights -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-4xl mx-auto">
-            <div class="bg-neutral-900/60 backdrop-blur border border-neutral-800 p-4 rounded-xl">
+            <div class="bg-neutral-900/60 backdrop-blur border border-neutral-800 p-4 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-amber-500/30">
                 <div class="text-amber-400 font-display font-black text-2xl md:text-3xl">사자</div>
                 <div class="text-xs text-neutral-400 mt-1">집단전 / 근력 / 하프갈기</div>
             </div>
-            <div class="bg-neutral-900/60 backdrop-blur border border-neutral-800 p-4 rounded-xl">
+            <div class="bg-neutral-900/60 backdrop-blur border border-neutral-800 p-4 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-orange-500/30">
                 <div class="text-orange-500 font-display font-black text-2xl md:text-3xl">호랑이</div>
                 <div class="text-xs text-neutral-400 mt-1">단독전 / 민첩성 / 체급</div>
             </div>
-            <div class="bg-neutral-900/60 backdrop-blur border border-neutral-800 p-4 rounded-xl">
+            <div class="bg-neutral-900/60 backdrop-blur border border-neutral-800 p-4 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                 <div class="text-white font-display font-black text-2xl md:text-3xl" id="totalVotesText">0</div>
                 <div class="text-xs text-neutral-400 mt-1">전 세계 참여 투표 수</div>
             </div>
-            <div class="bg-neutral-900/60 backdrop-blur border border-neutral-800 p-4 rounded-xl">
+            <div class="bg-neutral-900/60 backdrop-blur border border-neutral-800 p-4 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                 <div class="text-emerald-400 font-display font-black text-2xl md:text-3xl">99.8%</div>
                 <div class="text-xs text-neutral-400 mt-1">가상 승률 정확성</div>
             </div>
@@ -188,7 +253,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <!-- Lion Voting Card -->
-            <button onclick="vote('lion')" class="group relative overflow-hidden bg-neutral-900 hover:bg-neutral-800/80 border border-amber-500/30 hover:border-amber-500 rounded-2xl p-8 text-left transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-500/10 flex flex-col justify-between h-80 w-full">
+            <button onclick="vote('lion')" class="group relative overflow-hidden bg-neutral-900 hover:bg-neutral-800/80 border border-amber-500/30 hover:border-amber-500 rounded-2xl p-8 text-left transition-all duration-300 transform hover:-translate-y-2 hover:scale-[1.01] hover:shadow-xl hover:shadow-amber-500/10 flex flex-col justify-between h-80 w-full">
                 <div class="absolute top-0 right-0 p-8 text-7xl text-amber-500/10 font-black font-display group-hover:scale-110 transition-transform duration-300 select-none">LION</div>
                 <div>
                     <span class="bg-amber-500/20 text-amber-400 text-xs font-bold px-3 py-1 rounded-full border border-amber-500/30">초원의 왕</span>
@@ -207,7 +272,7 @@
             </button>
 
             <!-- Tiger Voting Card -->
-            <button onclick="vote('tiger')" class="group relative overflow-hidden bg-neutral-900 hover:bg-neutral-800/80 border border-orange-500/30 hover:border-orange-500 rounded-2xl p-8 text-left transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/10 flex flex-col justify-between h-80 w-full">
+            <button onclick="vote('tiger')" class="group relative overflow-hidden bg-neutral-900 hover:bg-neutral-800/80 border border-orange-500/30 hover:border-orange-500 rounded-2xl p-8 text-left transition-all duration-300 transform hover:-translate-y-2 hover:scale-[1.01] hover:shadow-xl hover:shadow-orange-500/10 flex flex-col justify-between h-80 w-full">
                 <div class="absolute top-0 right-0 p-8 text-7xl text-orange-500/10 font-black font-display group-hover:scale-110 transition-transform duration-300 select-none">TIGER</div>
                 <div>
                     <span class="bg-orange-500/20 text-orange-400 text-xs font-bold px-3 py-1 rounded-full border border-orange-500/30">정글의 투사</span>
@@ -244,7 +309,7 @@
         <!-- Spec Dashboard -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
             <!-- Left Card: Lion Profile -->
-            <div class="bg-neutral-950/80 border border-amber-500/20 p-6 rounded-2xl lion-glow">
+            <div class="bg-neutral-950/80 border border-amber-500/20 p-6 rounded-2xl lion-glow transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
                 <div class="relative h-64 bg-amber-950/20 rounded-xl overflow-hidden flex items-center justify-center border border-amber-500/10">
                     <!-- SVG Lion Minimalist Art -->
                     <svg viewBox="0 0 100 100" class="w-40 h-40 text-amber-500">
@@ -363,7 +428,7 @@
             </div>
 
             <!-- Right Card: Tiger Profile -->
-            <div class="bg-neutral-950/80 border border-orange-500/20 p-6 rounded-2xl tiger-glow">
+            <div class="bg-neutral-950/80 border border-orange-500/20 p-6 rounded-2xl tiger-glow transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
                 <div class="relative h-64 bg-orange-950/20 rounded-xl overflow-hidden flex items-center justify-center border border-orange-500/10">
                     <!-- SVG Tiger Minimalist Art -->
                     <svg viewBox="0 0 100 100" class="w-40 h-40 text-orange-500">
@@ -659,6 +724,71 @@
 
 <!-- Client-side Interactive JavaScript Code -->
 <script>
+    /* =========================================
+       0. COMMON INTERACTIONS & EFFECTS
+       ========================================= */
+    // Scroll Progress Bar Update
+    window.addEventListener('scroll', () => {
+        const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        document.getElementById('scrollProgressBar').style.width = scrolled + '%';
+    });
+
+    // Dark/Light Theme Switcher
+    function toggleTheme() {
+        const body = document.body;
+        const themeBtn = document.getElementById('themeToggleBtn');
+        const isLight = body.classList.toggle('light-mode');
+        
+        if (isLight) {
+            themeBtn.innerHTML = `<i class="fa-solid fa-sun text-sm"></i>`;
+            themeBtn.classList.remove('text-amber-500');
+            themeBtn.classList.add('text-orange-500');
+            localStorage.setItem('theme', 'light');
+        } else {
+            themeBtn.innerHTML = `<i class="fa-solid fa-moon text-sm"></i>`;
+            themeBtn.classList.remove('text-orange-500');
+            themeBtn.classList.add('text-amber-500');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    // Auto Title Typing Effect
+    const words = ["백수의 왕 vs 아시아의 제왕", "사바나의 절대 군주 vs 정글의 은둔 암살자", "인류 역사상 가장 위대한 라이벌 대결"];
+    let wordIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    const typingSpeed = 100;
+    const erasingSpeed = 50;
+    const delayBetweenWords = 2000;
+
+    function typeEffect() {
+        const currentWord = words[wordIndex];
+        const typingTextEl = document.getElementById('typing-text');
+        if (!typingTextEl) return;
+
+        if (isDeleting) {
+            typingTextEl.textContent = currentWord.substring(0, charIndex - 1);
+            charIndex--;
+        } else {
+            typingTextEl.textContent = currentWord.substring(0, charIndex + 1);
+            charIndex++;
+        }
+
+        if (!isDeleting && charIndex === currentWord.length) {
+            isDeleting = true;
+            setTimeout(typeEffect, delayBetweenWords);
+        } else if (isDeleting && charIndex === 0) {
+            isDeleting = false;
+            wordIndex = (wordIndex + 1) % words.length;
+            setTimeout(typeEffect, 500);
+        } else {
+            setTimeout(typeEffect, isDeleting ? erasingSpeed : typingSpeed);
+        }
+    }
+
+
     /* =========================================
        1. SOUND EFFECTS (Web Audio API)
        ========================================= */
@@ -1045,6 +1175,13 @@
     // Window load init
     window.onload = function() {
         initVotes();
+        typeEffect(); // Start title typing
+        
+        // Localstorage theme check
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            toggleTheme();
+        }
     };
 </script>
 
